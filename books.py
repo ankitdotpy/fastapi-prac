@@ -95,3 +95,13 @@ def update_book(book_id:str, title:str, author:str, year:int):
 
     Books[book_id] = new_book_info
     return new_book_info
+
+@app.delete('/assignment/')
+def delete_book(book_id:str):
+    del(Books[book_id])
+    return f'Deleted book {book_id}'
+
+# assignment questions
+@app.get('/assignment/')
+def read_books(book_id:str):
+    return Books[book_id]

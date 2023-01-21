@@ -85,8 +85,8 @@ def post_new_book(title:str, author:str, year:Optional[int]=None):
 
     return Books
 
-@app.post('/{book_id}')
-def post_update_book(book_id:str, title:str, author:str, year:int):
+@app.put('/{book_id}')
+def update_book(book_id:str, title:str, author:str, year:int):
     new_book_info = {
         'title':title,
         'author':author,

@@ -27,9 +27,11 @@ class Book(BaseModel):
 Books = []
 
 @app.get('/')
-def read_books():
+def read_books(book_to_return:Optional[int] = None):
     if len(Books)<1:
         create_books_no_api()
+    if book_to_return and len(Books)>=book_to_return>0:
+        return Books[:book_to_return] 
     return Books
 
 @app.post('/')

@@ -2,6 +2,8 @@ from typing import Optional
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from uuid import UUID
+from hashlib import sha256
+import exceptions as exp
 
 app = FastAPI()
 
@@ -24,7 +26,7 @@ class Book(BaseModel):
         ge=0, le=10
     )
 
-Books = []
+Books = {}
 
 @app.get('/')
 def read_books(book_to_return:Optional[int] = None):
@@ -34,10 +36,33 @@ def read_books(book_to_return:Optional[int] = None):
         return Books[:book_to_return] 
     return Books
 
+@app.get('/book/{book_id}')
+def read_books(book_id:UUID):
+    key = find_key_256(str(book_id))
+    if Books.get(key):
+        return Books[key]
+    raise exp.item_not_found()
+
 @app.post('/')
 def add_book(book:Book):
     Books.append(book)
     return book
+
+@app.post('/{book_id}')
+def update_book(book_id:UUID, book:Book):
+    key = find_key_256(book_id)
+    if Books.get(key):
+        Books[key] = book
+        return f'Updated book at {key}'
+    raise exp.item_not_found()
+
+@app.delete('/{book_id}')
+def delete_book(book_id:UUID):
+    key = find_key_256(book_id)
+    if Books.get(key):
+        del Books[key]
+        return f'deleted book at {key}'
+    raise exp.item_not_found()
 
 
 def create_books_no_api():
@@ -81,8 +106,13 @@ def create_books_no_api():
         rating=10
     )
 
-    Books.append(book1)
-    Books.append(book2)
-    Books.append(book3)
-    Books.append(book4)
-    Books.append(book5)
+    Books[str(find_key_256(book1.id))] = book1
+    Books[str(find_key_256(book2.id))] = book2
+    Books[str(find_key_256(book3.id))] = book3
+    Books[str(find_key_256(book4.id))] = book4
+    Books[str(find_key_256(book5.id))] = book5
+
+def find_key_256(uuid):
+    id = str(uuid)
+    k = sha256(id.encode())
+    return k.hexdigest()
